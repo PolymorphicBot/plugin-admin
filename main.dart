@@ -91,5 +91,10 @@ void handle_command(data) {
         raw("KICK ${target} ${args[0]}"); 
       }
       break;
+    case "list-networks":
+      recv.get("networks", {}).then((response) {
+        reply("> Networks: " + response['networks'].join(", "));
+      });
+      break;
   }
 }
