@@ -1,5 +1,5 @@
 name: channel_admin
 version: 1.0.0
-description: Channel Adminstration Plugin for YamBot
+description: Channel Adminstration Plugin for PolymorphicBot
 dependencies:
   plugins: any
