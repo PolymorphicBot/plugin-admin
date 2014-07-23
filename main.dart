@@ -19,8 +19,10 @@ void main(List<String> args, SendPort port) {
   recv = new Receiver(port);
 
   recv.listen((data) {
-    if (data["event"] == "command") {
-      handle_command(data);
+    switch (data['event']) {
+      case "command":
+        handle_command(data);
+        break;
     }
   });
 }
