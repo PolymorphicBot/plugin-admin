@@ -1,8 +1,4 @@
-import 'package:plugins/plugin.dart';
-import 'dart:isolate';
-import 'dart:io';
-
-Receiver recv;
+import "package:polymorphic_bot/api.dart";
 
 final Map<String, String> MODE_COMMANDS = {
   "op": "+o",
@@ -15,24 +11,16 @@ final Map<String, String> MODE_COMMANDS = {
   "unban": "-b"
 };
 
-Function onDisconnect;
+BotConnector bot;
+EventManager eventManager;
 
-void main(List<String> args, SendPort port) {
-  print("[Channel Admin] Loading");
-  recv = new Receiver(port);
-
-  recv.listen((data) {
-    switch (data['event']) {
-      case "disconnect":
-        if (onDisconnect != null) {
-          onDisconnect();
-        }
-        break;
-      case "command":
-        handleCommand(data);
-        break;
-    }
-  });
+void main(List<String> args, port) {
+  print("[Administration] Loading Plugin");
+  
+  bot = new BotConnector(port);
+  eventManager = bot.createEventManager();
+  
+  registerCommands();
 }
 
 String usageFor(String command) {
@@ -53,85 +41,58 @@ String usageFor(String command) {
   return "> Usage: ${command}" + (usage.isNotEmpty ? " " + usage : "");
 }
 
-void permission(void callback(Map data), String network, String target, String user, String node, [bool notify]) {
-  Map params = {
-    "node": node,
-    "network": network,
-    "nick": user,
-    "target": target,
-    "notify": notify
-  };
-  recv.get("permission", params).callIf((data) => data['has']).then(callback);
-}
+void registerCommands() {
 
-final List<String> POSSIBLE = ["topic", "kick", "stop", "list-networks"]..addAll(MODE_COMMANDS.keys);
-
-void handleCommand(data) {
-  var network = data['network'] as String;
-  var user = data['from'] as String;
-  var target = data['target'] as String;
-  var command = data['command'] as String;
-  var args = data['args'] as List<String>;
-
-  void require(String perm, void handle()) {
-    permission((it) => handle(), network, target, user, perm);
+  void raw(CommandEvent event, String line) {
+    bot.send("raw", {
+      "network": event.network,
+      "line": line
+    });
   }
-
-  void send(String command, Map<String, dynamic> args) {
-    var msg = {
-      "network": data['network'],
-      "command": command
-    };
-    msg.addAll(args);
-    recv.send(msg);
+  
+  for (var cmd in MODE_COMMANDS.keys) {
+    eventManager.command(cmd, (event) {
+      if (event.args.length != 1) {
+        event.reply(usageFor(event.command));
+      } else {
+        raw(event, "MODE ${event.channel} ${MODE_COMMANDS[event.command]} ${event.args[0]}");
+      }
+    });
   }
-
-  void raw(String line) => send("raw", {
-    "line": line
+  
+  eventManager.command("topic", (event) {
+    event.require("topic", () {
+      if (event.args.length == 0) {
+        event.reply(usageFor(event.command));
+      } else {
+        raw(event, "TOPIC ${event.channel} :${event.args.join(" ")}");
+      }
+    });
   });
-
-  void reply(String message) {
-    send("message", {
-      "target": data["target"],
-      "message": message
-    });
-  }
-
-  if (POSSIBLE.contains(command)) {
-    require(command, () {
-      if (MODE_COMMANDS.containsKey(command)) {
-        if (args.length != 1) {
-          reply(usageFor(command));
-        } else {
-          raw("MODE ${target} ${MODE_COMMANDS[command]} ${args[0]}");
-        }
-        return;
-      }
-
-      switch (command) {
-        case "topic":
-          if (args.length == 0) {
-            reply(usageFor(command));
-          } else {
-            raw("TOPIC ${target} :${args.join(" ")}");
-          }
-          break;
-        case "kick":
-          if (args.length != 1) {
-            reply(usageFor(command));
-          } else {
-            raw("KICK ${target} ${args[0]}");
-          }
-          break;
-        case "stop":
-          send("stop-bot", {});
-          break;
-        case "list-networks":
-          recv.get("networks", {}).then((response) {
-            reply("> Networks: " + response['networks'].join(", "));
-          });
-          break;
+  
+  eventManager.command("kick", (event) {
+    event.require("kick", () {
+      if (event.args.length != 1) {
+        event.reply(usageFor(event.command));
+      } else {
+        raw(event, "KICK ${event.channel} ${event.args[0]}");
       }
     });
-  }
+  });
+  
+  eventManager.command("stop", (event) {
+    event.require("bot.stop", () {
+      bot.send("stop-bot", {
+        "network": event.network
+      });
+    });
+  });
+  
+  eventManager.command("list-networks", (event) {
+    event.require("list-networks", () {
+      bot.getNetworks().then((networks) {
+        event.reply("> Networks: ${networks.join(" ")}");
+      });
+    });
+  });
 }

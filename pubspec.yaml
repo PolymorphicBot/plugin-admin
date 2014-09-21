@@ -1,5 +1,6 @@
-name: channel_admin
+name: administration
 version: 1.0.0
-description: Channel Adminstration Plugin for PolymorphicBot
+description: Adminstration Plugin for PolymorphicBot
 dependencies:
-  plugins: any
+  polymorphic_bot:
+    git: git://github.com/PolymorphicBot/PolymorphicBot.git
