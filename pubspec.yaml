@@ -4,3 +4,8 @@ description: Adminstration Plugin for PolymorphicBot
 dependencies:
   polymorphic_bot:
     git: git://github.com/PolymorphicBot/PolymorphicBot.git
+plugin:
+  commands:
+      reload:
+        description: Reloads Plugins
+        usage: ""

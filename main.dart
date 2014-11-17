@@ -69,6 +69,25 @@ void registerCommands() {
       }
     });
   });
+
+  eventManager.command("cycle", (event) {
+    event.require("command.cycle", () {
+      if (event.args.isNotEmpty) {
+        event.reply("> Usage: cycle");
+        return;
+      }
+
+      bot.send("part", {
+        "network": event.network,
+        "channel": event.channel
+      });
+
+      bot.send("join", {
+        "network": event.network,
+        "channel": event.channel
+      });
+    });
+  });
   
   eventManager.command("kick", (event) {
     event.require("kick", () {
@@ -90,8 +109,56 @@ void registerCommands() {
   
   eventManager.command("list-networks", (event) {
     event.require("list-networks", () {
+      if (event.args.isNotEmpty) {
+        event.reply("> Usage: list-networks");
+        return;
+      }
+
       bot.getNetworks().then((networks) {
         event.reply("> Networks: ${networks.join(" ")}");
+      });
+    });
+  });
+
+  eventManager.command("reload", (event) {
+    event.require("plugins.reload", () {
+      event.reply("> Reloading Plugins");
+      bot.send("reload-plugins", {
+        "network": event.network
+      });
+    });
+  });
+
+  eventManager.command("join", (event) {
+    event.require("join", () {
+      if (event.args.length > 2 || event.args.isEmpty) {
+        event.reply("> Usage: join [network] <channel>");
+        return;
+      }
+
+      var network = event.args.length == 2 ? event.args[0] : event.network;
+      var channel = event.args.length == 2 ? event.args[1] : event.args[0];
+
+      bot.send("join", {
+        "network": network,
+        "channel": channel
+      });
+    });
+  });
+
+  eventManager.command("part", (event) {
+    event.require("part", () {
+      if (event.args.length > 2 || event.args.isEmpty) {
+        event.reply("> Usage: part [network] <channel>");
+        return;
+      }
+
+      var network = event.args.length == 2 ? event.args[0] : event.network;
+      var channel = event.args.length == 2 ? event.args[1] : event.args[0];
+
+      bot.send("part", {
+        "network": network,
+        "channel": channel
       });
     });
   });
