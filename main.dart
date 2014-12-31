@@ -12,13 +12,11 @@ final Map<String, String> MODE_COMMANDS = {
 };
 
 BotConnector bot;
-EventManager eventManager;
 
-void main(List<String> args, port) {
+void main(List<String> args, Plugin plugin) {
   print("[Administration] Loading Plugin");
   
-  bot = new BotConnector(port);
-  eventManager = bot.createEventManager();
+  bot = plugin.getBot();
   
   registerCommands();
 }
@@ -51,7 +49,7 @@ void registerCommands() {
   }
   
   for (var cmd in MODE_COMMANDS.keys) {
-    eventManager.command(cmd, (event) {
+    bot.command(cmd, (event) {
       if (event.args.length != 1) {
         event.reply(usageFor(event.command));
       } else {
@@ -60,7 +58,7 @@ void registerCommands() {
     });
   }
   
-  eventManager.command("topic", (event) {
+  bot.command("topic", (event) {
     event.require("topic", () {
       if (event.args.length == 0) {
         event.reply(usageFor(event.command));
@@ -70,7 +68,7 @@ void registerCommands() {
     });
   });
 
-  eventManager.command("cycle", (event) {
+  bot.command("cycle", (event) {
     event.require("command.cycle", () {
       if (event.args.isNotEmpty) {
         event.reply("> Usage: cycle");
@@ -89,7 +87,7 @@ void registerCommands() {
     });
   });
   
-  eventManager.command("kick", (event) {
+  bot.command("kick", (event) {
     event.require("kick", () {
       if (event.args.length != 1) {
         event.reply(usageFor(event.command));
@@ -99,7 +97,7 @@ void registerCommands() {
     });
   });
   
-  eventManager.command("stop", (event) {
+  bot.command("stop", (event) {
     event.require("bot.stop", () {
       bot.send("stop-bot", {
         "network": event.network
@@ -107,7 +105,7 @@ void registerCommands() {
     });
   });
   
-  eventManager.command("list-networks", (event) {
+  bot.command("list-networks", (event) {
     event.require("list-networks", () {
       if (event.args.isNotEmpty) {
         event.reply("> Usage: list-networks");
@@ -120,7 +118,7 @@ void registerCommands() {
     });
   });
 
-  eventManager.command("reload", (event) {
+  bot.command("reload", (event) {
     event.require("plugins.reload", () {
       event.reply("> Reloading Plugins");
       bot.send("reload-plugins", {
@@ -129,7 +127,7 @@ void registerCommands() {
     });
   });
 
-  eventManager.command("join", (event) {
+  bot.command("join", (event) {
     event.require("join", () {
       if (event.args.length > 2 || event.args.isEmpty) {
         event.reply("> Usage: join [network] <channel>");
@@ -146,7 +144,7 @@ void registerCommands() {
     });
   });
 
-  eventManager.command("part", (event) {
+  bot.command("part", (event) {
     event.require("part", () {
       if (event.args.length > 2 || event.args.isEmpty) {
         event.reply("> Usage: part [network] <channel>");
