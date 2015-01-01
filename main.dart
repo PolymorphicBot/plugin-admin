@@ -12,8 +12,10 @@ final Map<String, String> MODE_COMMANDS = {
 };
 
 BotConnector bot;
+Plugin plugin;
 
-void main(List<String> args, Plugin plugin) {
+void main(List<String> args, Plugin myPlugin) {
+  plugin = myPlugin;
   print("[Administration] Loading Plugin");
   
   bot = plugin.getBot();
@@ -26,6 +28,7 @@ String usageFor(String command) {
     if (MODE_COMMANDS.containsKey(command)) {
       return "<user>";
     }
+    
     switch (command) {
       case "topic":
         return "<message>";
@@ -42,7 +45,7 @@ String usageFor(String command) {
 void registerCommands() {
 
   void raw(CommandEvent event, String line) {
-    bot.send("raw", {
+    plugin.send("raw", {
       "network": event.network,
       "line": line
     });
@@ -75,12 +78,12 @@ void registerCommands() {
         return;
       }
 
-      bot.send("part", {
+      plugin.send("part", {
         "network": event.network,
         "channel": event.channel
       });
 
-      bot.send("join", {
+      plugin.send("join", {
         "network": event.network,
         "channel": event.channel
       });
@@ -99,7 +102,7 @@ void registerCommands() {
   
   bot.command("stop", (event) {
     event.require("bot.stop", () {
-      bot.send("stop-bot", {
+      plugin.send("stop-bot", {
         "network": event.network
       });
     });
@@ -121,7 +124,7 @@ void registerCommands() {
   bot.command("reload", (event) {
     event.require("plugins.reload", () {
       event.reply("> Reloading Plugins");
-      bot.send("reload-plugins", {
+      plugin.send("reload-plugins", {
         "network": event.network
       });
     });
@@ -137,7 +140,7 @@ void registerCommands() {
       var network = event.args.length == 2 ? event.args[0] : event.network;
       var channel = event.args.length == 2 ? event.args[1] : event.args[0];
 
-      bot.send("join", {
+      plugin.send("join", {
         "network": network,
         "channel": channel
       });
@@ -154,7 +157,7 @@ void registerCommands() {
       var network = event.args.length == 2 ? event.args[0] : event.network;
       var channel = event.args.length == 2 ? event.args[1] : event.args[0];
 
-      bot.send("part", {
+      plugin.send("part", {
         "network": network,
         "channel": channel
       });
