@@ -17,9 +17,9 @@ Plugin plugin;
 void main(List<String> args, Plugin myPlugin) {
   plugin = myPlugin;
   print("[Administration] Loading Plugin");
-  
+
   bot = plugin.getBot();
-  
+
   registerCommands();
 }
 
@@ -28,7 +28,7 @@ String usageFor(String command) {
     if (MODE_COMMANDS.containsKey(command)) {
       return "<user>";
     }
-    
+
     switch (command) {
       case "topic":
         return "<message>";
@@ -50,7 +50,7 @@ void registerCommands() {
       "line": line
     });
   }
-  
+
   for (var cmd in MODE_COMMANDS.keys) {
     bot.command(cmd, (event) {
       if (event.args.length != 1) {
@@ -58,109 +58,93 @@ void registerCommands() {
       } else {
         raw(event, "MODE ${event.channel} ${MODE_COMMANDS[event.command]} ${event.args[0]}");
       }
-    });
+    }, permission: cmd);
   }
-  
+
   bot.command("topic", (event) {
-    event.require("topic", () {
-      if (event.args.length == 0) {
-        event.reply(usageFor(event.command));
-      } else {
-        raw(event, "TOPIC ${event.channel} :${event.args.join(" ")}");
-      }
-    });
-  });
+    if (event.args.length == 0) {
+      event.reply(usageFor(event.command));
+    } else {
+      raw(event, "TOPIC ${event.channel} :${event.args.join(" ")}");
+    }
+  }, permission: "topic");
 
   bot.command("cycle", (event) {
-    event.require("command.cycle", () {
-      if (event.args.isNotEmpty) {
-        event.reply("> Usage: cycle");
-        return;
-      }
+    if (event.args.isNotEmpty) {
+      event.reply("> Usage: cycle");
+      return;
+    }
 
-      plugin.send("part", {
-        "network": event.network,
-        "channel": event.channel
-      });
-
-      plugin.send("join", {
-        "network": event.network,
-        "channel": event.channel
-      });
+    plugin.send("part", {
+      "network": event.network,
+      "channel": event.channel
     });
-  });
-  
+
+    plugin.send("join", {
+      "network": event.network,
+      "channel": event.channel
+    });
+  }, permission: "command.cycle");
+
   bot.command("kick", (event) {
-    event.require("kick", () {
-      if (event.args.length != 1) {
-        event.reply(usageFor(event.command));
-      } else {
-        raw(event, "KICK ${event.channel} ${event.args[0]}");
-      }
-    });
-  });
-  
-  bot.command("stop", (event) {
-    event.require("bot.stop", () {
-      plugin.send("stop-bot", {
-        "network": event.network
-      });
-    });
-  });
-  
-  bot.command("list-networks", (event) {
-    event.require("list-networks", () {
-      if (event.args.isNotEmpty) {
-        event.reply("> Usage: list-networks");
-        return;
-      }
+    if (event.args.length != 1) {
+      event.reply(usageFor(event.command));
+    } else {
+      raw(event, "KICK ${event.channel} ${event.args[0]}");
+    }
+  }, permission: "kick");
 
-      bot.getNetworks().then((networks) {
-        event.reply("> Networks: ${networks.join(" ")}");
-      });
+  bot.command("stop", (event) {
+    plugin.send("stop-bot", {
+      "network": event.network
     });
-  });
+  }, permission: "bot.stop");
+
+  bot.command("list-networks", (event) {
+    if (event.args.isNotEmpty) {
+      event.reply("> Usage: list-networks");
+      return;
+    }
+
+    bot.getNetworks().then((networks) {
+      event.reply("> Networks: ${networks.join(" ")}");
+    });
+  }, permission: "networks.list");
 
   bot.command("reload", (event) {
-    event.require("plugins.reload", () {
-      event.reply("> Reloading Plugins");
-      plugin.send("reload-plugins", {
-        "network": event.network
-      });
+    event.reply("> Reloading Plugins");
+    plugin.send("reload-plugins", {
+      "network": event.network
     });
-  });
+  }, permission: "plugins.reload");
 
   bot.command("join", (event) {
-    event.require("join", () {
-      if (event.args.length > 2 || event.args.isEmpty) {
-        event.reply("> Usage: join [network] <channel>");
-        return;
-      }
+    if (event.args.length > 2 || event.args.isEmpty) {
+      event.reply("> Usage: join [network] <channel>");
+      return;
+    }
 
-      var network = event.args.length == 2 ? event.args[0] : event.network;
-      var channel = event.args.length == 2 ? event.args[1] : event.args[0];
+    var network = event.args.length == 2 ? event.args[0] : event.network;
+    var channel = event.args.length == 2 ? event.args[1] : event.args[0];
 
-      plugin.send("join", {
-        "network": network,
-        "channel": channel
-      });
+    plugin.send("join", {
+      "network": network,
+      "channel": channel
     });
-  });
+  }, permission: "join");
 
   bot.command("part", (event) {
-    event.require("part", () {
-      if (event.args.length > 2 || event.args.isEmpty) {
-        event.reply("> Usage: part [network] <channel>");
-        return;
-      }
+    if (event.args.length > 2 || event.args.isEmpty) {
+      event.reply("> Usage: part [network] <channel>");
+      return;
+    }
 
-      var network = event.args.length == 2 ? event.args[0] : event.network;
-      var channel = event.args.length == 2 ? event.args[1] : event.args[0];
+    var network = event.args.length == 2 ? event.args[0] : event.network;
+    var channel = event.args.length == 2 ? event.args[1] : event.args[0];
 
-      plugin.send("part", {
-        "network": network,
-        "channel": channel
-      });
+    plugin.send("part", {
+      "network": network,
+      "channel": channel
     });
-  });
+  }, permission: "part");
 }
