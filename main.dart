@@ -45,10 +45,7 @@ String usageFor(String command) {
 void registerCommands() {
 
   void raw(CommandEvent event, String line) {
-    plugin.send("raw", {
-      "network": event.network,
-      "line": line
-    });
+    bot.sendRawLine(event.network, line);
   }
 
   for (var cmd in MODE_COMMANDS.keys) {
@@ -74,16 +71,12 @@ void registerCommands() {
       event.reply("> Usage: cycle");
       return;
     }
+    
+    var network = event.network;
+    var channel = event.channel;
 
-    plugin.send("part", {
-      "network": event.network,
-      "channel": event.channel
-    });
-
-    plugin.send("join", {
-      "network": event.network,
-      "channel": event.channel
-    });
+    bot.partChannel(network, channel);
+    bot.joinChannel(network, channel);
   }, permission: "command.cycle");
 
   bot.command("kick", (event) {
@@ -95,9 +88,7 @@ void registerCommands() {
   }, permission: "kick");
 
   bot.command("stop", (event) {
-    plugin.send("stop-bot", {
-      "network": event.network
-    });
+    bot.stop();
   }, permission: "bot.stop");
 
   bot.command("list-networks", (event) {
@@ -113,9 +104,7 @@ void registerCommands() {
 
   bot.command("reload", (event) {
     event.reply("> Reloading Plugins");
-    plugin.send("reload-plugins", {
-      "network": event.network
-    });
+    bot.reloadPlugins();
   }, permission: "plugins.reload");
 
   bot.command("join", (event) {
@@ -127,10 +116,7 @@ void registerCommands() {
     var network = event.args.length == 2 ? event.args[0] : event.network;
     var channel = event.args.length == 2 ? event.args[1] : event.args[0];
 
-    plugin.send("join", {
-      "network": network,
-      "channel": channel
-    });
+    bot.joinChannel(network, channel);
   }, permission: "join");
 
   bot.command("part", (event) {
@@ -142,9 +128,6 @@ void registerCommands() {
     var network = event.args.length == 2 ? event.args[0] : event.network;
     var channel = event.args.length == 2 ? event.args[1] : event.args[0];
 
-    plugin.send("part", {
-      "network": network,
-      "channel": channel
-    });
+    bot.partChannel(network, channel);
   }, permission: "part");
 }
