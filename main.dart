@@ -14,8 +14,9 @@ final Map<String, String> MODE_COMMANDS = {
 BotConnector bot;
 Plugin plugin;
 
-void main(List<String> args, Plugin myPlugin) {
-  plugin = myPlugin;
+void main(args, port) {
+  plugin = polymorphic(args, port);
+  
   print("[Administration] Loading Plugin");
 
   bot = plugin.getBot();
