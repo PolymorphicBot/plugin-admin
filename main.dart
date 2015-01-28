@@ -103,11 +103,6 @@ void registerCommands() {
     });
   }, permission: "networks.list");
 
-  bot.command("reload", (event) {
-    event.reply("> Reloading Plugins");
-    bot.reloadPlugins();
-  }, permission: "plugins.reload");
-
   bot.command("join", (event) {
     if (event.args.length > 2 || event.args.isEmpty) {
       event.reply("> Usage: join [network] <channel>");
